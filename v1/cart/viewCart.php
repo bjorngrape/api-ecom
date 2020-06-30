@@ -12,7 +12,7 @@ $cart_handler = new Cart($dbh);
 $token = $_GET['token'];
 
 $return = $user_handler->viewToken($token);
-$token_id = $return['id'];
+// $token = $return['id'];
 
 if($user_handler->validateToken($token) === false) {
     echo "Invalid token!";
@@ -24,12 +24,12 @@ if(isset($_GET['action']) && $_GET['action'] == "delete") {
     $cartid = $_GET['cartid'];
     echo $cart_handler->removeFromCart($cartid);
     
-    echo "<a href='http://localhost:8080/api-ecom/v1/cart/viewCart.php?token=". $token ."'> View cart </a>";
+    echo "<a href='http://localhost:8080/api-ecom/v1/cart/viewCart.php?token=". $token ."'>View cart</a>";
 } else {
 
-    echo "<h1> Cart </h1>";
+    echo "<h1>Cart</h1>";
 
-    $cart_handler->viewCart($token_id);
+    $cart_handler->viewCart($token);
 
     foreach ($cart_handler->fetchCart() as $item) {
     
@@ -44,7 +44,7 @@ if(isset($_GET['action']) && $_GET['action'] == "delete") {
 
     if (!empty ($cart_handler->fetchCart() )) {
 
-        echo "<a href='http://llocalhost:8080/api-ecom/v1/cart/checkout.php?token=". $token ."'> Checkout </a>";
+        echo "<a href='http://llocalhost:8080/api-ecom/v1/cart/checkout.php?token=". $token ."'>Checkout</a>";
     
     } else {
         echo "Empty cart";

@@ -5,7 +5,7 @@ class User {
     private $dbh;
     public $unique_username;
     public $user_id;
-    private $token_valid_time = 60;
+    private $token_validity_time = 60;
 
     public function __construct($databasehandler)
     {
@@ -189,7 +189,7 @@ class User {
                 $token_timestamp = $return['date_updated'];
                 $diff = time() - $token_timestamp;
 
-                if(($diff / 60) > $this->token_valid_time) {
+                if(($diff / 60) > $this->token_validity_time) {
 
                     $query_string = "DELETE FROM tokens WHERE user_id=:userID";
                     $sth = $this->dbh->prepare($query_string);
@@ -267,7 +267,7 @@ class User {
 
                 $diff = time() - $token_data['date_updated'];
 
-                if( ($diff / 60) < $this->token_valid_time ) {
+                if( ($diff / 60) < $this->token_validity_time ) {
 
                 $query_string = "UPDATE tokens SET date_updated = :updated_date WHERE token = :token";
                 $sth = $this->dbh->prepare($query_string);
