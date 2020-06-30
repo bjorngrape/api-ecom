@@ -10,18 +10,18 @@ class Cart {
         $this->dbh = $databasehandler;
     }
 
-    public function addProduct2Cart($token_id, $book) {
+    public function addProductToCart($token_id, $product) {
 
         $return_object = new stdClass();
 
-        $query = "INSERT INTO cart (token_id, product_id) VALUES (:token_id, :book);";
+        $query = "INSERT INTO cart (token_id, product_id) VALUES (:token_id, :product);";
 
             $sth = $this->dbh->prepare($query);
 
                 if ($sth !== false) {
 
                     $sth->bindParam(':token_id', $token_id);
-                    $sth->bindParam(':book', $book);
+                    $sth->bindParam(':product', $product);
             
                     $sth->execute();
 
@@ -60,6 +60,7 @@ class Cart {
             $return_object->message = "Here is your cart";
 
             } else {
+
                 $return_object->state = "error";
                 $return_object->message = "Your cart is empty";
         
@@ -100,6 +101,7 @@ class Cart {
             $return_object->message = "Item removed from cart";
 
         } else {
+
             $return_object->state = "error";
             $return_object->message = "Something went wrong...";
 
@@ -132,6 +134,7 @@ class Cart {
             return $sth->fetch();
 
         } else {
+            
             $return_object->state = "error";
             $return_object->message = "Something went wrong...";
 

@@ -3,9 +3,9 @@
 class User {
     
     private $dbh;
-    public $uniq_username;
+    public $unique_username;
     public $user_id;
-    private $token_validity_time = 60; // minutes
+    private $token_valid_time = 60;
 
     public function __construct($databasehandler)
     {
@@ -18,25 +18,24 @@ class User {
 
         if ($this->isUsernameTaken($username) === false) {
             
-
               $return = $this->insertUser($username, $password);
 
               if($return !== false) {
                   $return_object->state = "success";
                   $return_object->user = $return;
+
               } else {
                 $return_object->state = "error";
-                $return_object->message = "Something went wrong when trying to INSERT user";
+                $return_object->message = "Something went wrong when trying to create user";
 
               }
 
         } else {
             $return_object->state = "error";
-            $return_object->message = "username e upptagen";
+            $return_object->message = "Username is taken";
         }
 
         return json_encode($return_object);
-
     }
 
     private function insertUser($username, $password) {
@@ -63,7 +62,6 @@ class User {
             return $sth->fetch();
 
         } else {
-
             return false;
         }
     }
@@ -86,22 +84,23 @@ class User {
                     $return_object->state = "error";
                     $return_object->message = "Username already exists";
                     return true;
+
                 } else {
                     $return_object->state = "success";
-                    $return_object->message = "All good, carry on";
+                    $return_object->message = "Welcome";
                     return false;
                 }
 
         } else {
             $return_object->state = "error";
-            $return_object->message = "Something went wrong when trying to connect to db";
+            $return_object->message = "Something went wrong...";
         }
 
         return json_encode($return_object);
 
     }
 
-    public function LogIn($username, $password) {
+    public function logIn($username, $password) {
 
         $return_object = new stdClass();
 
@@ -117,36 +116,30 @@ class User {
             $return = $sth->fetch();
 
             if (!empty($return)) {
-
-                $this->uniq_username = $return['username'];
+                $this->unique_username = $return['username'];
                 $this->user_id = $return['id'];
             
                 $return_object->state = "success";
                 $return_object->token = $this->getToken($this->user_id);
-                $return_object->message = "You are logged in";
+                $return_object->message = "Welcome, you are logged in.";
                 
                 
             } else {
-
                 $return_object->state = "error";
                 $return_object->message = "Incorrect username or password";
 
             }
 
         } else {
-
             $return_object->state = "error";
-            $return_object->message = "Something went wrong when trying to connect to db";
-
+            $return_object->message = "Something went wrong...";
         }
 
         return json_encode($return_object);
     }
 
-
     public function getToken($userID) {
 
-        
         $token = $this->checkToken($userID);
 
         return $token;
@@ -159,7 +152,6 @@ class User {
         $query_string = "SELECT id, token, user_id  FROM tokens WHERE token = :token";
         $sth = $this->dbh->prepare($query_string);
 
-
             if ($sth !== false) {
 
                 $sth->bindParam(':token', $token);
@@ -169,19 +161,15 @@ class User {
                 if(!empty($return)) {
 
                     return $return;
-
                 }
 
             } else {
-
                 $return_object->state = "error";
-                $return_object->message = "Something went wrong when trying to connect to db";
+                $return_object->message = "Something went wrong...";
             }
 
         return json_encode($return_object);
     }
-
-
 
     private function checkToken($userID) {
 
@@ -189,7 +177,6 @@ class User {
 
         $query_string = "SELECT token, date_updated FROM tokens WHERE user_id = :userid";
         $sth = $this->dbh->prepare($query_string);
-
 
             if ($sth !== false) {
 
@@ -202,7 +189,7 @@ class User {
                 $token_timestamp = $return['date_updated'];
                 $diff = time() - $token_timestamp;
 
-                if(($diff / 60) > $this->token_validity_time) {
+                if(($diff / 60) > $this->token_valid_time) {
 
                     $query_string = "DELETE FROM tokens WHERE user_id=:userID";
                     $sth = $this->dbh->prepare($query_string);
@@ -210,7 +197,6 @@ class User {
                     $sth->bindParam(':userID', $userID);
                     $sth->execute();
 
-            
                     $return_object->state = "success";
                     $return_object->message = "You got a token";
 
@@ -218,12 +204,11 @@ class User {
 
                 } else {
                     $return_object->state = "success";
-                    $return_object->message = "token updated";
+                    $return_object->message = "Token updated";
 
                     return $return['token'];
                 }
             } else {
-
                 $return_object->state = "success";
                 $return_object->message = "You got a token";
 
@@ -231,20 +216,18 @@ class User {
             }
 
         } else {
-
             $return_object->state = "error";
-            $return_object->message = "Something went wrong when trying to connect to db";
+            $return_object->message = "Something went wrong...";
         }
 
         return json_encode($return_object);
     }
 
-
     private function createToken($userID) {
 
         $return_object = new stdClass();
 
-        $uniqToken = md5($this->uniq_username.uniqid('', true).time());
+        $uniqueToken = md5($this->unique_username.uniqid('', true).time());
 
         $query_string = "INSERT INTO tokens (user_id, token, date_updated) VALUES (:userid, :token, :current_time)";
         $sth = $this->dbh->prepare($query_string);
@@ -253,21 +236,19 @@ class User {
 
                 $currentTime = time();
                 $sth->bindParam(':userid', $userID);
-                $sth->bindParam(':token', $uniqToken);
+                $sth->bindParam(':token', $uniqueToken);
                 $sth->bindParam(":current_time", $currentTime, PDO::PARAM_INT);
                 $sth->execute();
 
-                return $uniqToken;
+                return $uniqueToken;
                 
             } else {
                 $return_object->state = "error";
-                $return_object->message = "Something went wrong when trying to connect to db";
+                $return_object->message = "Something went wrong...";
             }
 
         return json_encode($return_object);
     }
-
-
 
     public function validateToken($token) {
 
@@ -286,7 +267,7 @@ class User {
 
                 $diff = time() - $token_data['date_updated'];
 
-                if( ($diff / 60) < $this->token_validity_time ) {
+                if( ($diff / 60) < $this->token_valid_time ) {
 
                 $query_string = "UPDATE tokens SET date_updated = :updated_date WHERE token = :token";
                 $sth = $this->dbh->prepare($query_string);
@@ -298,7 +279,7 @@ class User {
                 $sth->execute();
 
                 $return_object->state = "success";
-                $return_object->message = "All good here, carry on";
+                $return_object->message = "Welcome";
 
                 return true;
 
@@ -310,24 +291,19 @@ class User {
 
             } else {
                 $return_object->state = "error";
-                $return_object->message = "Please login";
+                $return_object->message = "Please try again";
                 return false;
             }
 
 
         } else {
-
             $return_object->state = "error";
-            $return_object->message = "Something went wrong when trying to connect to db";
+            $return_object->message = "Something went wrong...";
 
             return false;
     
         }
 
         return json_encode($return_object);
-
     }
-
-    
-
 }

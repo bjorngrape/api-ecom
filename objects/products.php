@@ -3,29 +3,29 @@
 class Product {
 
     private $dbh;
-    private $books;
+    private $product;
 
     public function __construct($databasehandler)
     {
         $this->dbh = $databasehandler;
     }
 
-    public function addProduct($title, $content, $price, $qty) {
+    public function addProduct($title, $description, $price, $quantity) {
 
         $return_object = new stdClass();
 
-        if ($this->bookTitleExists($title) === false) {
+        if ($this->productTitleExists($title) === false) {
         
-            $query = "INSERT INTO products (title, descrip, price, quantity) VALUES (:title, :content, :price, :qty);";
+            $query = "INSERT INTO products (title, description, price, quantity) VALUES (:title, :description, :price, :quantity);";
 
             $sth = $this->dbh->prepare($query);
 
                 if ($sth !== false) {
 
                     $sth->bindParam(':title', $title);
-                    $sth->bindParam(':content', $content);
+                    $sth->bindParam(':description', $description);
                     $sth->bindParam(':price', $price);
-                    $sth->bindParam(':qty', $qty);
+                    $sth->bindParam(':quantity', $quantity);
 
                     $sth->execute();
 
@@ -40,14 +40,14 @@ class Product {
         } else {
 
             $return_object->state = "error";
-            $return_object->message = "Book already exists in database";
+            $return_object->message = "Product already exists in database";
 
         }
 
         return json_encode($return_object);
     }
 
-    private function bookTitleExists($title) {
+    private function productTitleExists($title) {
 
         $return_object = new stdClass();
 
@@ -59,11 +59,11 @@ class Product {
             $sth->bindParam(':title', $title);
             $sth->execute();
 
-            $numberOfbooks = $sth->fetch()[0];
+            $numberOfProducts = $sth->fetch()[0];
 
-                if ($numberOfbooks > 0) {
+                if ($numberOfProducts > 0) {
                     $return_object->state = "error";
-                    $return_object->message = "Book already exists in database";
+                    $return_object->message = "Product already exists in database";
                     return true;
 
                 } else {
@@ -84,7 +84,7 @@ class Product {
     {
         $return_object = new stdClass();
 
-        $query = "SELECT id, title, descrip, price, quantity FROM products;";
+        $query = "SELECT id, title, description, price, quantity FROM products;";
 
         $sth = $this->dbh->prepare($query);
 
@@ -93,11 +93,11 @@ class Product {
             $sth->execute();
 
             $return_array = $sth->fetchAll(PDO::FETCH_ASSOC);
-            $this->books = $return_array;
+            $this->products = $return_array;
 
             if(!empty ($return_array) ) {
                 $return_object->state = "success";
-                $return_object->message = "Here is all our books";
+                $return_object->message = "Here is all of our products";
             }
 
         } else {
@@ -108,103 +108,101 @@ class Product {
         return json_encode($return_object);
     }
 
-    public function fetchBook()
+    public function fetchProduct()
     {
-        return $this->books;
+        return $this->product;
     }
 
-    public function deleteBook($bookID)
+    public function deleteProduct($productID)
     {
         $return_object = new stdClass();
-        $query = "DELETE FROM products WHERE id= :bookID";
+        $query = "DELETE FROM products WHERE id= :productID";
         $sth = $this->dbh->prepare($query);
 
         if ($sth !== false) {
 
-            $sth->bindParam(':bookID', $bookID);
+            $sth->bindParam(':productID', $productID);
             $sth->execute();
 
             $return_object->state = "success";
-            $return_object->message = "The book is deleted from db";
+            $return_object->message = "The product is deleted from database";
 
         } else {
             $return_object->state = "error";
-            $return_object->message = "Something went wrong when trying to connect to db";
+            $return_object->message = "Something went wrong...";
         }
 
         return json_encode($return_object);
     }
 
-    private $editbook;
+    private $editProduct;
 
-    public function getEditBook($bookID)
+    public function getEditProduct($productID)
     {
         $return_object = new stdClass();
 
-        $query = "SELECT id, title, descrip, price, quantity FROM products WHERE id= :bookID;";
+        $query = "SELECT id, title, description, price, quantity FROM products WHERE id= :productID;";
 
         $sth = $this->dbh->prepare($query);
 
         if ($sth !== false) {
 
-            $sth->bindParam(':bookID', $bookID);
+            $sth->bindParam(':productID', $productID);
             $sth->execute();
 
             $return_array = $sth->fetchAll(PDO::FETCH_ASSOC);
-            $this->editbook = $return_array;
+            $this->editProduct = $return_array;
 
             $return_object->state = "success";
-            $return_object->message = "Here is your book";   
+            $return_object->message = "Here is your product";   
         } else {
 
             $return_object->state = "error";
-            $return_object->message = "Something went wrong when trying to connect to db";
+            $return_object->message = "Something went wrong...";
         }
-        
-
+    
         return json_encode($return_object);
-        
     }
 
-    public function fetchEditBook()
+    public function fetchEditProduct()
     {
-        return $this->editbook;
+        return $this->editProduct;
     }
 
-    public function editBook($title, $descrip, $price, $qty, $bookid)
+    public function editProduct($title, $description, $price, $quantity, $productid)
     {
         $return_object = new stdClass();
 
-        $query = "UPDATE products SET title = :title, descrip = :descrip, price = :price, quantity = :qty WHERE Id = :bookid; ";
+        $query = "UPDATE products SET title = :title, description = :description, price = :price, quantity = :quantity WHERE Id = :productid; ";
         $sth = $this->dbh->prepare($query);
 
         if ($sth !== false) {
             $sth->bindParam(':title', $title );
-            $sth->bindParam(':descrip', $descrip);
+            $sth->bindParam(':description', $description);
             $sth->bindParam(':price', $price);
-            $sth->bindParam(':qty', $qty);
-            $sth->bindParam(':bookid', $bookid);
+            $sth->bindParam(':quantity', $quantity);
+            $sth->bindParam(':productid', $productid);
 
             $sth->execute();
 
             $return_object->state = "success";
-            $return_object->message = "Book is updated";
+            $return_object->message = "Product updated";
 
         } else {
 
             $return_object->state = "error";
-            $return_object->message = "Something went wrong when trying to connect to db";
+            $return_object->message = "Something went wrong...";
         }
         
         return json_encode($return_object);
     }
 
 
-    public function searchBook($searchQ) {
+    public function searchProduct($searchQ) {
 
         $return_object = new stdClass();
         
-        $query = "SELECT id, title, descrip, price, quantity FROM products WHERE title LIKE :searchQ OR descrip LIKE :searchQ;";
+        $query = "SELECT id, title, description, price, quantity FROM products WHERE title LIKE :searchQ OR description LIKE :searchQ;";
 
         $sth = $this->dbh->prepare($query);
 
@@ -215,16 +213,14 @@ class Product {
         $return_array = $sth->execute();
         
         $return_array = $sth->fetchAll(PDO::FETCH_ASSOC);
-        $this->books = $return_array;
+        $this->products = $return_array;
 
         } else {
 
             $return_object->state = "error";
-            $return_object->message = "Something went wrong when trying to connect to db";
+            $return_object->message = "Something went wrong...";
         }
         
         return json_encode($return_object);
     }
-       
-    
 }
