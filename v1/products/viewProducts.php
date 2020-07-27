@@ -27,50 +27,58 @@ if ($user_handler->viewToken($token) ['user_id'] && $user_handler->viewToken($to
 if(isset($_GET['action']) && $_GET['action'] == "search") {
 
     $searchQ = $_POST['searchQ'];
-    $product_handler->searchProduct($searchQ);
 
-    echo "<h2>Search result</h2>";
+    if ($searchQ=="") {
+        echo "<h1>All products</h1>";
 
-    foreach ($product_handler->fetchProduct() as $product) {
-    
-        echo "<hr />";
-        echo "<b> Title: </b>" . $product['title'];
-        echo "<br />";
-        echo "<b> Description: </b>" . $product['description'] ."<br />";
-        echo "<br />";
-        echo "<b> Price: </b>" . $product['price'] ."<br />";
-        echo "<br />";
-        echo "<a href='http://localhost:8080/api-ecom/v1/cart/addToCart.php?token=". $token ."&action=add&productId=" . $product['id'] . "'>Add to Cart </a>";
-    }
+        $fetchResult = $product_handler->fetchAll();
 
-    include("../includes/search.php");
-   
-} else {
+        if ($fetchResult->state=="success") {
 
-    echo "<h1>All products</h1>";
-
-    include("../includes/search.php");
-
-    $product_handler->fetchAll();
-
-    foreach ($product_handler->fetchProduct() as $product) {
+            foreach ($fetchResult->result as $product) {
+            
+                echo "<hr />";
+                echo "<b> Title: </b>" . $product['title'];
+                echo "<br />";
+                echo "<b> Description: </b>" . $product['description'] ."<br />";
+                echo "<br />";
+                echo "<b> Price: </b>" . $product['price'] ."<br />";
+                echo "<br />"; 
+                
         
-        echo "<hr />";
-        echo "<b> Title: </b>" . $product['title'];
-        echo "<br />";
-        echo "<b> Description: </b>" . $product['description'] ."<br />";
-        echo "<br />";
-        echo "<b> Price: </b>" . $product['price'] ."<br />";
-        echo "<br />";
-
-        if ($user_handler->viewToken($token) ['user_id'] && $user_handler->viewToken($token) ['user_id'] == 1) {
-        echo "<b> Quantity: </b>" . $product['quantity'] ."<br />";
-        echo "<a href='http://localhost:8080/api-ecom/v1/products/editProduct.php?token=". $token ."&action=edit&productId=" . $product['id'] . "'> Edit </a>";
-        echo "<a href='http://localhost:8080/api-ecom/v1/products/viewProducts.php?token=". $token ."&action=delete&productId=" . $product['id'] . "'> Delete </a>";
-        } else {
-
-            echo "<a href='http://localhost:8080/api-ecom/v1/cart/addToCart.php?token=". $token ."&action=add&productId=" . $product['id'] . "'>Add to Cart </a>";
+                if ($user_handler->viewToken($token) ['user_id'] && $user_handler->viewToken($token) ['user_id'] == 1) {
+                echo "<b> Quantity: </b>" . $product['quantity'] ."<br />";
+                echo "<a href='http://localhost:8080/api-ecom/v1/products/editProduct.php?token=". $token ."&action=edit&productId=" . $product['id'] . "'> Edit </a>";
+                echo "<a href='http://localhost:8080/api-ecom/v1/products/viewProducts.php?token=". $token ."&action=delete&productId=" . $product['id'] . "'> Delete </a>";
+                } else {
+        
+                    echo "<a href='http://localhost:8080/api-ecom/v1/cart/addToCart.php?token=". $token ."&action=add&productId=" . $product['id'] . "'>Add to Cart </a>";
+                }
+            }
         }
     }
-}
+
+    else {
+        $product_handler->searchProduct($searchQ);
+
+        echo "<h2>Search result</h2>";
+    
+        foreach ($product_handler->fetchProduct() as $product) {
+        
+            echo "<hr />";
+            echo "<b> Title: </b>" . $product['title'];
+            echo "<br />";
+            echo "<b> Description: </b>" . $product['description'] ."<br />";
+            echo "<br />";
+            echo "<b> Price: </b>" . $product['price'] ."<br />";
+            echo "<br />";
+            echo "<a href='http://localhost:8080/api-ecom/v1/cart/addToCart.php?token=". $token ."&action=add&productId=" . $product['id'] . "'>Add to Cart </a>";
+        }
+    
+    }
+
+} 
+
+include("../includes/search.php");
+
 ?> 

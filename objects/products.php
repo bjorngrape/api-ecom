@@ -88,6 +88,8 @@ class Product {
 
         $sth = $this->dbh->prepare($query);
 
+        // log("fetchAll sth"+$sth);
+
         if ($sth !== false) {
 
             $sth->execute();
@@ -95,9 +97,12 @@ class Product {
             $return_array = $sth->fetchAll(PDO::FETCH_ASSOC);
             $this->products = $return_array;
 
+         //   print_r("fetchAll return_array"+$return_array);
+
             if(!empty ($return_array) ) {
                 $return_object->state = "success";
                 $return_object->message = "Here is all of our products";
+                $return_object->result = $return_array;
             }
 
         } else {
@@ -105,7 +110,7 @@ class Product {
             $return_object->message = "Something went wrong...";
         }
 
-        return json_encode($return_object);
+        return $return_object;
     }
 
     public function fetchProduct()
