@@ -1,4 +1,8 @@
-## Planering
+## Uppgiftsbeskrivning
+*"Ni ska göra ett API för en e-handelsplattform. Man ska kunna administrera produkter, hämta
+produkter, sortera produkter samt ha en användarhantering för kunder."*
+
+
 End-points v1
     
     - users/
